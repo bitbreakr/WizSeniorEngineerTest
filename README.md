@@ -60,11 +60,43 @@ The business goal of the game database is to provide an internal service to get 
 Many other applications at Voodoo will use consume this API.
 
 #### Question 1:
-We are planning to put this project in production. According to you, what are the missing pieces to make this project production ready? 
+We are planning to put this project in production. According to you, what are the missing pieces to make this project production ready?
 Please elaborate an action plan.
+
+##### Answer:
+**Core Infrastructure Improvements:**
+* Implement environment configuration injection (.env files)
+* Consider migrating from SQLite to a production database (Postgres ou MongoDB)
+* Structured logging
+* Application monitoring (Datadog)
+* Error tracking (Sentry)
+* Apply modern JavaScript practices - async/await throughout for better readability and error handling
+* Consider TypeScript migration (incremental approach possible) to improve type safety and developer experience
+* Implement a versioning strategy
+* Enhance security with proper middleware (helmet, rate limiting, CORS configuration)
+* Increase test coverage with a layered approach (unit, integration, E2E) with goal of at least 80% coverage
+* Modernize frontend build system (Vite or Nuxt depending on application needs)
+* Implement proper state management and component architecture
+* Consider micro-frontend approach if application scope is growing
+* Implement CI/CD pipeline with GitHub Actions or GitLab CI
+* Containerize with Docker
+* For scalability: Consider Kubernetes if traffic patterns require horizontal scaling (Auto sclae)
+* Implement caching strategy at appropriate layers (Top 100 could be cached)
+* For search functionality, evaluate specialized search services (elasticsearch, Meilisearch)
+* Implement proper database indexing and query optimization (Mongo or Postgres)
+* Add proper authentication/authorization
+
 
 #### Question 2:
 Let's pretend our data team is now delivering new files every day into the S3 bucket, and our service needs to ingest those files
 every day through the populate API. Could you describe a suitable solution to automate this? Feel free to propose architectural changes.
 
+##### Answer:
+Based on my experince with simlar projects, I'd suggest two approaches for this daily ingestion problem:
+The most solid option is API-driven with presigned URLs. We did this at my comapny and it worked great. 
+Data team registers files, you generate short-lived URLs (keep them under 3 min - trust me on this one), they upload directly to S3, then you process via events or webhooks.
+This gives you more control over the whole flow and has been really reliable for us.
 
+
+Or I'd use S3 event triggers -> Lambda -> SQS. 
+AWS Lambda does the initial validation because data can be non conform, and drops a message in SQS, then your app either polls the queue or sets up a webhook endpoint
